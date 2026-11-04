@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Locações">
+<title>Painel de Locações</title>
+<style>
+:root{
+  --bg:#f6f5f2; --card:#ffffff; --ink:#1c1b19; --muted:#6b6760; --line:#e4e1da;
+  --beach:#0f8b8d; --beach-soft:#d6eeee; --studio:#d9822b; --studio-soft:#f8e6d3;
+  --block:#9a948a; --accent:#0f766e; --danger:#b42318; --ok:#1a7f37;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#151513; --card:#1f1e1b; --ink:#ecebe7; --muted:#a19d95; --line:#34322e;
+    --beach:#3fb6b8; --beach-soft:#183536; --studio:#f0a256; --studio-soft:#3a2a1a;
+    --block:#7d786f; --accent:#3fb6a8; --danger:#f07167; --ok:#5cc27a;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:84px}
+header{padding:18px 16px 8px;max-width:980px;margin:0 auto}
+header h1{margin:0;font-size:21px;letter-spacing:-.01em}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px}
+main{max-width:980px;margin:0 auto;padding:0 16px}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:5;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;max-width:200px;background:none;border:0;color:var(--muted);padding:10px 4px 12px;font:inherit;font-size:12px;cursor:pointer}
+nav button svg{display:block;margin:0 auto 3px;width:22px;height:22px}
+nav button.on{color:var(--accent);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.card h2{margin:0 0 10px;font-size:16px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn.danger{color:var(--danger)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .wd{font-size:11px;color:var(--muted);text-align:center;padding-bottom:2px}
+.day{min-height:62px;border:1px solid var(--line);border-radius:8px;padding:4px;cursor:pointer;background:var(--card);position:relative}
+.day.out{opacity:.35}
+.day.today{outline:2px solid var(--accent);outline-offset:-2px}
+.day.sel{background:color-mix(in srgb,var(--accent) 10%,var(--card))}
+.day .n{font-size:12px;font-weight:600}
+.bar{height:7px;border-radius:4px;margin-top:4px}
+.bar.beach{background:var(--beach)} .bar.studio{background:var(--studio)}
+.bar.blk{background:repeating-linear-gradient(45deg,var(--block) 0 3px,transparent 3px 6px)}
+.bar.in{margin-left:45%}
+.item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.tag{font-size:11px;padding:2px 7px;border-radius:20px;white-space:nowrap;font-weight:600}
+.tag.beach{background:var(--beach-soft);color:var(--beach)} .tag.studio{background:var(--studio-soft);color:var(--studio)}
+.muted{color:var(--muted);font-size:13px}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;color:var(--muted);font-weight:600}
+.scroll{overflow-x:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:10px}
+.kpi b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+dialog{border:0;border-radius:16px;padding:0;background:var(--card);color:var(--ink);width:min(520px,calc(100vw - 24px))}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{padding:16px}
+.hidden{display:none}
+ol.steps{padding-left:20px;margin:6px 0} ol.steps li{margin:4px 0}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:14px;width:max-content;max-width:90vw;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+@media (max-width:520px){ .day{min-height:50px} .grid2{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Painel de Locações</h1>
+  <p>Beach House Uruaú · Studio Essential Perdizes · <span id="status"></span></p>
+</header>
+
+<main>
+<!-- CALENDÁRIO -->
+<section id="tab-cal">
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn sm" id="prev" aria-label="Mês anterior">‹</button>
+      <h2 id="mesTitulo" style="margin:0;min-width:150px;text-align:center"></h2>
+      <button class="btn sm" id="next" aria-label="Próximo mês">›</button>
+      <span class="sp"></span>
+      <button class="btn pri sm" onclick="abrirForm()">+ Reserva</button>
+    </div>
+    <div class="legend" style="margin-bottom:8px">
+      <span><i class="dot" style="background:var(--beach)"></i>Beach House</span>
+      <span><i class="dot" style="background:var(--studio)"></i>Studio</span>
+      <span><i class="dot" style="background:repeating-linear-gradient(45deg,var(--block) 0 2px,transparent 2px 4px)"></i>Bloqueio / uso próprio</span>
+    </div>
+    <div class="cal" id="cal"></div>
+  </div>
+  <div class="card">
+    <h2 id="diaTitulo">Próximos movimentos</h2>
+    <div id="diaLista"></div>
+  </div>
+</section>
+
+<!-- RESERVAS -->
+<section id="tab-res" class="hidden">
+  <div class="card">
+    <div class="row" style="margin-bottom:8px">
+      <h2 style="margin:0">Reservas</h2><span class="sp"></span>
+      <select id="filtroProp" style="width:auto">
+        <option value="">Todas</option><option value="beach">Beach House</option><option value="studio">Studio</option>
+      </select>
+      <button class="btn pri sm" onclick="abrirForm()">+ Nova</button>
+    </div>
+    <div id="listaRes"></div>
+  </div>
+</section>
+
+<!-- FINANCEIRO -->
+<section id="tab-fin" class="hidden">
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <h2 style="margin:0">Financeiro</h2><span class="sp"></span>
+      <select id="finProp" style="width:auto">
+        <option value="">Todas</option><option value="beach">Beach House</option><option value="studio">Studio</option>
+      </select>
+    </div>
+    <div class="kpis" id="kpis"></div>
+  </div>
+  <div class="card scroll">
+    <h2>Por mês</h2>
+    <table id="tabFin"></table>
+    <p class="muted">Líquido = Valor (já líquido) + Taxa extra. Bruto = Líquido + Taxa do app. Ocupação conta só noites pagas (sem bloqueios).</p>
+  </div>
+</section>
+
+<!-- CONFIG -->
+<section id="tab-cfg" class="hidden">
+  <div class="card">
+    <div class="row"><h2 style="margin:0">Sincronização automática</h2><span class="sp"></span>
+      <button class="btn sm" onclick="sincronizar(false)">Sincronizar agora</button></div>
+    <div id="syncBox"></div>
+  </div>
+  <div class="card">
+    <h2>Studio Essential Perdizes · planilha</h2>
+    <p class="muted">Envie a planilha de controle (Excel <code>.xlsx</code> ou <code>.csv</code>) no mesmo formato de sempre: colunas <b>Data, Plataforma, Taxa Extra, Valor, Taxa App</b>, com uma linha de mês (ex.: <i>nov.-26</i>) e as estadias como <i>13 a 15</i>. Linhas como "Reserva Marcelo" viram bloqueio. Pode enviar a planilha inteira sempre: o app atualiza sem duplicar.</p>
+    <label class="btn pri" style="display:inline-block;width:auto;color:#fff;font-size:14px">Importar planilha do Studio
+      <input type="file" accept=".xlsx,.xls,.csv,.ods" class="hidden" onchange="importarPlanilha(this)"></label>
+    <span class="muted" id="infoPlanilha" style="margin-left:6px"></span>
+  </div>
+  <div class="card">
+    <h2>Beach House · importação manual (iCal)</h2>
+    <p class="muted">No Airbnb: <b>Anúncios → (anúncio) → Disponibilidade → Conectar calendários → Exportar calendário</b>. Copie o link (termina em <code>.ics</code>). Abra o link no navegador para baixar o arquivo e importe aqui.</p>
+    <div id="icalBox"></div>
+  </div>
+  <div class="card">
+    <h2>Backup</h2>
+    <p class="muted">Os dados ficam salvos neste aparelho. Use o backup para passar para outro celular ou computador.</p>
+    <div class="row">
+      <button class="btn" onclick="exportar()">Baixar backup</button>
+      <label class="btn" style="margin:0;color:var(--ink);font-size:15px">Restaurar backup<input type="file" accept=".json" class="hidden" onchange="importarBackup(this)"></label>
+      <button class="btn danger" onclick="resetar()">Restaurar dados da planilha</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<nav>
+  <button class="on" data-tab="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendário</button>
+  <button data-tab="res"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Reservas</button>
+  <button data-tab="fin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20h18M6 16V10M11 16V5M16 16v-8M21 16v-4"/></svg>Financeiro</button>
+  <button data-tab="cfg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>Sincronizar</button>
+</nav>
+
+<dialog id="dlg">
+  <form method="dialog" id="frm">
+    <h2 style="margin:0 0 4px;font-size:17px" id="frmTitulo">Nova reserva</h2>
+    <input type="hidden" name="id">
+    <label>Locação</label>
+    <select name="prop"><option value="beach">Beach House Uruaú</option><option value="studio">Studio Essential Perdizes</option></select>
+    <div class="grid2">
+      <div><label>Check-in</label><input type="date" name="ini" required></div>
+      <div><label>Check-out</label><input type="date" name="fim" required></div>
+    </div>
+    <div class="grid2">
+      <div><label>Plataforma</label>
+        <select name="plat"><option>Airbnb</option><option>Booking</option><option>Direto</option><option>Bloqueio</option></select></div>
+      <div><label>Hóspede</label><input name="hospede" placeholder="Nome"></div>
+    </div>
+    <div class="grid2">
+      <div><label>Valor líquido (R$)</label><input name="valor" inputmode="decimal" placeholder="0,00"></div>
+      <div><label>Taxa extra (R$)</label><input name="extra" inputmode="decimal" placeholder="0,00"></div>
+    </div>
+    <div class="grid2">
+      <div><label>Taxa do app (R$)</label><input name="taxa" inputmode="decimal" placeholder="0,00"></div>
+      <div><label>Status</label>
+        <select name="status"><option value="">—</option><option>Confirmada</option><option>Paga</option><option>Pendente</option></select></div>
+    </div>
+    <label>Observações</label><textarea name="obs" rows="2" placeholder="Ex.: chega 22h, 2 adultos + pet"></textarea>
+    <div class="row" style="margin-top:14px">
+      <button type="button" class="btn danger" id="btnExcluir">Excluir</button>
+      <span class="sp"></span>
+      <button type="button" class="btn" onclick="dlg.close()">Cancelar</button>
+      <button type="submit" class="btn pri">Salvar</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const PROPS={beach:'Beach House Uruaú',studio:'Studio Essential Perdizes'};
+const KEY='locacoes_v1';
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+// Dados iniciais: planilha do Studio Essential Perdizes
+const SEED=[
+ {prop:'studio',ini:'2026-09-05',fim:'2026-09-06',plat:'Airbnb',valor:203.61,taxa:67.14},
+ {prop:'studio',ini:'2026-09-13',fim:'2026-09-16',plat:'Bloqueio',hospede:'Reserva Marcelo'},
+ {prop:'studio',ini:'2026-09-19',fim:'2026-09-20',plat:'Airbnb',valor:276.25,taxa:80.37},
+ {prop:'studio',ini:'2026-09-25',fim:'2026-09-27',plat:'Airbnb',valor:434.70,taxa:109.22},
+ {prop:'studio',ini:'2026-10-09',fim:'2026-10-12',plat:'Booking',extra:200,valor:986.50,taxa:128.25},
+ {prop:'studio',ini:'2026-10-24',fim:'2026-10-27',plat:'Airbnb',valor:1186.05,taxa:216.01},
+ {prop:'studio',ini:'2026-10-27',fim:'2026-10-28',plat:'Airbnb',valor:475.00,taxa:101.99},
+ {prop:'studio',ini:'2026-10-29',fim:'2026-11-02',plat:'Bloqueio',hospede:'Reserva Marcelo'},
+ {prop:'studio',ini:'2026-11-13',fim:'2026-11-15',plat:'Airbnb',valor:521.00,taxa:124.94},
+].map((r,i)=>({id:'s'+i,hospede:'',extra:0,valor:0,taxa:0,obs:'',status:'',fonte:'planilha',...r}));
+
+let state=load();
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&Array.isArray(s.res)) return s;}catch(e){}
+  return {res:JSON.parse(JSON.stringify(SEED)),ical:{beach:'',studio:''}};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+
+// ---------- utilidades ----------
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+const toD=s=>new Date(s+'T00:00:00Z');
+const addDays=(s,n)=>{const d=toD(s);d.setUTCDate(d.getUTCDate()+n);return iso(d)};
+const diff=(a,b)=>Math.round((toD(b)-toD(a))/864e5);
+const hoje=(()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())})();
+const brl=v=>(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtD=s=>{const d=toD(s);return pad(d.getUTCDate())+'/'+pad(d.getUTCMonth()+1)};
+const num=v=>{if(v==null||v==='')return 0; if(typeof v==='number')return v; return parseFloat(String(v).replace(/\./g,'').replace(',','.'))||0};
+const liquido=r=>r.plat==='Bloqueio'?0:(r.valor||0)+(r.extra||0);
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),m.length>60?7000:2200)}
+const sorted=()=>[...state.res].sort((a,b)=>a.ini.localeCompare(b.ini));
+
+// ---------- abas ----------
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['cal','res','fin','cfg'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!==b.dataset.tab));
+  renderAll();
+});
+
+// ---------- calendário ----------
+let mes=(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()}})();
+let diaSel=null;
+document.getElementById('prev').onclick=()=>{mes.m--; if(mes.m<0){mes.m=11;mes.y--} diaSel=null; renderCal()};
+document.getElementById('next').onclick=()=>{mes.m++; if(mes.m>11){mes.m=0;mes.y++} diaSel=null; renderCal()};
+
+function ocupando(dia){return state.res.filter(r=>r.ini<=dia&&dia<r.fim)}
+function renderCal(){
+  document.getElementById('mesTitulo').textContent=MESES[mes.m]+' '+mes.y;
+  const first=new Date(Date.UTC(mes.y,mes.m,1));
+  let start=addDays(iso(first),-first.getUTCDay());
+  let h=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(w=>`<div class="wd">${w}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const d=addDays(start,i), dd=toD(d);
+    if(i===35 && dd.getUTCMonth()!==mes.m) break;
+    const occ=ocupando(d);
+    let bars='';
+    ['beach','studio'].forEach(p=>{
+      const r=occ.find(x=>x.prop===p);
+      if(r) bars+=`<div class="bar ${p} ${r.plat==='Bloqueio'?'blk':''} ${r.ini===d?'in':''}" title="${PROPS[p]}"></div>`;
+      else bars+=`<div class="bar" style="background:transparent"></div>`;
+    });
+    h+=`<div class="day ${dd.getUTCMonth()!==mes.m?'out':''} ${d===hoje?'today':''} ${d===diaSel?'sel':''}" onclick="selDia('${d}')"><div class="n">${dd.getUTCDate()}</div>${bars}</div>`;
+  }
+  document.getElementById('cal').innerHTML=h;
+  renderDia();
+}
+function selDia(d){diaSel=diaSel===d?null:d;renderCal()}
+function itemHTML(r,extra){
+  const n=diff(r.ini,r.fim);
+  const nome=r.plat==='Bloqueio'?(r.hospede||'Bloqueio'):(r.hospede||r.plat);
+  return `<div class="item"><span class="tag ${r.prop}">${r.prop==='beach'?'Beach':'Studio'}</span>
+   <div class="sp"><b>${esc(nome)}</b> <span class="muted">· ${r.plat}${r.fonte==='ical'?' (sinc.)':''}</span><br>
+   <span class="muted">${fmtD(r.ini)} → ${fmtD(r.fim)} · ${n} noite${n>1?'s':''}${extra?' · '+extra:''}</span>
+   ${r.obs?`<br><span class="muted">${esc(r.obs)}</span>`:''}</div>
+   ${r.plat!=='Bloqueio'&&r.valor?`<div class="num"><b>${brl(liquido(r))}</b><br><span class="muted">líquido</span></div>`:''}
+   <button class="btn sm" onclick="abrirForm('${r.id}')">Editar</button></div>`;
+}
+function renderDia(){
+  const tit=document.getElementById('diaTitulo'), el=document.getElementById('diaLista');
+  if(diaSel){
+    tit.textContent='Dia '+fmtD(diaSel);
+    const lst=state.res.filter(r=>(r.ini<=diaSel&&diaSel<r.fim)||r.fim===diaSel);
+    el.innerHTML=lst.length?lst.map(r=>itemHTML(r,r.ini===diaSel?'<b>check-in hoje</b>':r.fim===diaSel?'<b>check-out</b>':'hospedado')).join(''):'<p class="muted">Livre nas duas locações.</p>';
+    return;
+  }
+  tit.textContent='Próximos movimentos';
+  const lst=sorted().filter(r=>r.fim>=hoje).slice(0,8);
+  el.innerHTML=lst.length?lst.map(r=>{
+    const di=diff(hoje,r.ini);
+    const txt=r.ini<=hoje?(r.fim===hoje?'check-out hoje':'em andamento'):di===1?'check-in amanhã':'check-in em '+di+' dias';
+    return itemHTML(r,txt);
+  }).join(''):'<p class="muted">Nenhuma reserva futura.</p>';
+}
+
+// ---------- reservas ----------
+document.getElementById('filtroProp').onchange=renderRes;
+function renderRes(){
+  const f=document.getElementById('filtroProp').value;
+  const lst=sorted().filter(r=>!f||r.prop===f).reverse();
+  let h='',mAtual='';
+  lst.forEach(r=>{const d=toD(r.ini),m=MESES[d.getUTCMonth()]+' '+d.getUTCFullYear();
+    if(m!==mAtual){h+=`<h3 style="margin:14px 0 2px;font-size:13px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em">${m}</h3>`;mAtual=m}
+    h+=itemHTML(r);});
+  document.getElementById('listaRes').innerHTML=h||'<p class="muted">Nenhuma reserva.</p>';
+}
+
+// ---------- financeiro ----------
+document.getElementById('finProp').onchange=renderFin;
+function renderFin(){
+  const f=document.getElementById('finProp').value;
+  const lst=state.res.filter(r=>(!f||r.prop===f)&&r.plat!=='Bloqueio');
+  const meses={};
+  lst.forEach(r=>{
+    for(let d=r.ini;d<r.fim;d=addDays(d,1)){const k=d.slice(0,7);(meses[k]=meses[k]||{noites:0,res:new Set(),bruto:0,taxa:0,liq:0}).noites++}
+    const k=r.ini.slice(0,7), m=meses[k]=meses[k]||{noites:0,res:new Set(),bruto:0,taxa:0,liq:0};
+    m.res.add(r.id); m.bruto+=(r.valor||0)+(r.extra||0)+(r.taxa||0); m.taxa+=r.taxa||0; m.liq+=liquido(r);
+  });
+  const nProps=f?1:2;
+  const ks=Object.keys(meses).sort().reverse();
+  let tot={bruto:0,taxa:0,liq:0,noites:0,res:0};
+  let rows=ks.map(k=>{const m=meses[k];const [y,mm]=k.split('-').map(Number);
+    const dias=new Date(Date.UTC(y,mm,0)).getUTCDate()*nProps;
+    tot.bruto+=m.bruto;tot.taxa+=m.taxa;tot.liq+=m.liq;tot.noites+=m.noites;tot.res+=m.res.size;
+    return `<tr><td>${MESES[mm-1].slice(0,3)}/${String(y).slice(2)}</td><td class="num">${m.res.size}</td><td class="num">${m.noites}</td><td class="num">${Math.round(m.noites/dias*100)}%</td><td class="num">${brl(m.bruto)}</td><td class="num">${brl(m.taxa)}</td><td class="num"><b>${brl(m.liq)}</b></td></tr>`}).join('');
+  document.getElementById('tabFin').innerHTML=`<tr><th>Mês</th><th class="num">Reservas</th><th class="num">Noites</th><th class="num">Ocup.</th><th class="num">Bruto</th><th class="num">Taxas</th><th class="num">Líquido</th></tr>`+rows;
+  document.getElementById('kpis').innerHTML=`
+   <div class="kpi"><span>Líquido total</span><b>${brl(tot.liq)}</b></div>
+   <div class="kpi"><span>Bruto</span><b>${brl(tot.bruto)}</b></div>
+   <div class="kpi"><span>Taxas de app</span><b>${brl(tot.taxa)}</b></div>
+   <div class="kpi"><span>Reservas · noites</span><b>${tot.res} · ${tot.noites}</b></div>
+   <div class="kpi"><span>Diária média líquida</span><b>${brl(tot.noites?tot.liq/tot.noites:0)}</b></div>`;
+}
+
+// ---------- formulário ----------
+const dlg=document.getElementById('dlg'), frm=document.getElementById('frm');
+function abrirForm(id){
+  frm.reset();
+  const r=id?state.res.find(x=>x.id===id):{prop:'beach',ini:diaSel||hoje,fim:addDays(diaSel||hoje,1),plat:'Airbnb'};
+  document.getElementById('frmTitulo').textContent=id?'Editar reserva':'Nova reserva';
+  document.getElementById('btnExcluir').style.visibility=id?'visible':'hidden';
+  for(const k of ['id','prop','ini','fim','plat','hospede','obs','status']) if(frm[k]) frm[k].value=r[k]||'';
+  for(const k of ['valor','extra','taxa']) frm[k].value=r[k]?String(r[k].toFixed(2)).replace('.',','):'';
+  dlg.showModal();
+}
+frm.onsubmit=e=>{
+  const v=Object.fromEntries(new FormData(frm));
+  if(v.fim<=v.ini){e.preventDefault();toast('O check-out precisa ser depois do check-in');return}
+  const conflito=state.res.find(r=>r.id!==v.id&&r.prop===v.prop&&r.ini<v.fim&&v.ini<r.fim);
+  if(conflito&&!confirm(`Atenção: conflita com ${conflito.hospede||conflito.plat} (${fmtD(conflito.ini)}→${fmtD(conflito.fim)}). Salvar mesmo assim?`)){e.preventDefault();return}
+  const r={...v,valor:num(v.valor),extra:num(v.extra),taxa:num(v.taxa)};
+  const i=state.res.findIndex(x=>x.id===v.id);
+  let salvo;
+  if(i>=0){salvo=state.res[i]={...state.res[i],...r}; if(salvo.fonte==='ical')salvo.editado=true}
+  else state.res.push(salvo={...r,id:'m'+Date.now(),fonte:'manual'});
+  save();renderAll();toast('Reserva salva');
+  enviar({acao:'salvar',itens:[limpo(salvo)]});
+};
+document.getElementById('btnExcluir').onclick=()=>{
+  if(!confirm('Excluir esta reserva?'))return;
+  const id=frm.id.value;
+  state.res=state.res.filter(r=>r.id!==id);save();dlg.close();renderAll();toast('Excluída');
+  enviar({acao:'excluir',ids:[id]});
+};
+
+// ---------- iCal ----------
+function renderIcal(){
+  const np=state.res.filter(r=>r.prop==='studio'&&r.fonte==='planilha').length;
+  document.getElementById('infoPlanilha').textContent=np+' lançamentos vindos da planilha';
+  document.getElementById('icalBox').innerHTML=['beach'].map(p=>`
+   <div style="border-top:1px solid var(--line);padding-top:10px;margin-top:10px">
+    <b>${PROPS[p]}</b>
+    <label>Link iCal do Airbnb</label>
+    <div class="row"><input id="url-${p}" value="${esc(state.ical[p])}" placeholder="https://www.airbnb.com.br/calendar/ical/....ics" style="flex:1;width:auto">
+      <button class="btn sm" onclick="salvarUrl('${p}')">Salvar</button>
+      <button class="btn sm" onclick="abrirUrl('${p}')">Baixar .ics</button></div>
+    <label class="btn pri" style="display:inline-block;width:auto;margin-top:8px;color:#fff;font-size:14px">Importar arquivo .ics
+      <input type="file" accept=".ics,text/calendar" class="hidden" onchange="importarIcs('${p}',this)"></label>
+    <span class="muted" style="margin-left:6px">${state.res.filter(r=>r.prop===p&&r.fonte==='ical').length} reservas sincronizadas</span>
+   </div>`).join('');
+}
+function salvarUrl(p){state.ical[p]=document.getElementById('url-'+p).value.trim();save();toast('Link salvo')}
+function abrirUrl(p){salvarUrl(p);if(state.ical[p])window.open(state.ical[p],'_blank');else toast('Cole o link primeiro')}
+function parseIcs(txt){
+  const lines=txt.replace(/\r\n[ \t]/g,'').replace(/\n[ \t]/g,'').split(/\r?\n/);
+  const ev=[];let cur=null;
+  for(const l of lines){
+    if(l==='BEGIN:VEVENT')cur={};
+    else if(l==='END:VEVENT'){if(cur&&cur.ini)ev.push(cur);cur=null}
+    else if(cur){const i=l.indexOf(':');if(i<0)continue;const k=l.slice(0,i).split(';')[0],v=l.slice(i+1);
+      const dt=s=>s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);
+      if(k==='DTSTART')cur.ini=dt(v); else if(k==='DTEND')cur.fim=dt(v);
+      else if(k==='SUMMARY')cur.sum=v; else if(k==='UID')cur.uid=v; else if(k==='DESCRIPTION')cur.desc=v.replace(/\\n/g,' ').replace(/\\,/g,',');}
+  }
+  return ev;
+}
+// ev: [{ini,fim,bloq,uid,desc}] — substitui as sincronizações anteriores desta locação
+function aplicarEventos(p,ev){
+  const antigos={};state.res.filter(r=>r.prop===p&&r.fonte==='ical'&&!r.editado).forEach(r=>antigos[r.id]=r);
+  state.res=state.res.filter(r=>!(r.prop===p&&r.fonte==='ical'&&!r.editado));
+  let n=0;
+  ev.forEach(e=>{
+    if(!e.ini)return; if(!e.fim)e.fim=addDays(e.ini,1);
+    // não duplica o que já foi lançado à mão
+    if(state.res.some(r=>r.prop===p&&r.ini===e.ini&&r.fim===e.fim))return;
+    const id='i'+p+(e.uid||e.ini), old=antigos[id];
+    state.res.push(old&&old.ini===e.ini&&old.fim===e.fim?old:{id,prop:p,ini:e.ini,fim:e.fim,plat:e.bloq?'Bloqueio':'Airbnb',
+      hospede:e.bloq?'Bloqueado no Airbnb':'Reserva Airbnb',valor:0,extra:0,taxa:0,status:'',
+      obs:(e.desc||'').slice(0,160),fonte:'ical'});n++;
+  });
+  return n;
+}
+function importarIcs(p,input){
+  const f=input.files[0];if(!f)return;
+  f.text().then(txt=>{
+    const ev=parseIcs(txt).map(e=>({...e,bloq:/not available|blocked|indispon/i.test(e.sum||'')}));
+    if(!ev.length){toast('Nenhum evento encontrado no arquivo');return}
+    const n=aplicarEventos(p,ev);save();renderAll();toast(n+' reservas importadas');
+  });
+  input.value='';
+}
+// ---------- planilha do Studio ----------
+const MES_ABREV={jan:0,fev:1,feb:1,mar:2,abr:3,apr:3,mai:4,may:4,jun:5,jul:6,ago:7,aug:7,set:8,sep:8,out:9,oct:9,nov:10,dez:11,dec:11};
+function carregarXLSX(){
+  if(window.XLSX)return Promise.resolve();
+  return new Promise((ok,err)=>{const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=ok;s.onerror=()=>err(new Error('sem internet'));document.head.appendChild(s)});
+}
+const norm=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+function lerPlanilha(rows){
+  let col=null,cur=null;const out=[];
+  for(const row of rows){
+    if(!col){
+      const i=row.findIndex(c=>norm(c)==='data');
+      if(i>=0){col={data:i};row.forEach((c,j)=>{const n=norm(c);
+        if(n.startsWith('plataforma'))col.plat=j; else if(n.includes('extra'))col.extra=j;
+        else if(n.includes('app'))col.taxa=j; else if(n==='valor')col.valor=j;});}
+      continue;
+    }
+    const d=row[col.data];
+    if(d instanceof Date){const x=new Date(d.getTime()+432e5);cur={y:x.getFullYear(),m:x.getMonth()};continue}
+    const sd=norm(d);
+    const mm=sd.match(/^([a-z]{3})[a-z]*\.?[\s\-\/]+(\d{2,4})$/);
+    if(mm&&MES_ABREV[mm[1]]!=null){const y=+mm[2];cur={y:y<100?2000+y:y,m:MES_ABREV[mm[1]]};continue}
+    const dm=sd.match(/^(\d{1,2})\s*(?:a|-|ate|à)\s*(\d{1,2})$/);
+    if(!dm||!cur)continue;
+    const d1=+dm[1],d2=+dm[2];
+    const ini=cur.y+'-'+pad(cur.m+1)+'-'+pad(d1);
+    const fm=d2>d1?cur.m:cur.m+1, fy=cur.y+(fm>11?1:0);
+    const fim=fy+'-'+pad(fm%12+1)+'-'+pad(d2);
+    const valor=col.valor!=null?num(row[col.valor]):0;
+    const pt=col.plat!=null?norm(row[col.plat]):'';
+    const textoBloq=row.find((c,j)=>j!==col.data&&/reserva|bloque|uso proprio|manuten/.test(norm(c)));
+    let plat=pt.startsWith('airb')?'Airbnb':pt.startsWith('book')?'Booking':valor?'Direto':'';
+    let hospede='';
+    if(textoBloq&&!valor){plat='Bloqueio';hospede=String(textoBloq).trim()}
+    if(!plat)continue;
+    out.push({prop:'studio',ini,fim,plat,hospede,valor,
+      extra:col.extra!=null?num(row[col.extra]):0,taxa:col.taxa!=null?num(row[col.taxa]):0});
+  }
+  return out;
+}
+async function importarPlanilha(input){
+  const f=input.files[0];input.value='';if(!f)return;
+  try{await carregarXLSX()}catch(e){toast('Precisa de internet para ler a planilha');return}
+  let rows;
+  try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array',cellDates:true});
+    rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});}
+  catch(e){toast('Não consegui abrir este arquivo');return}
+  const novos=lerPlanilha(rows);
+  if(!novos.length){toast('Não encontrei estadias. Confira se há a coluna "Data" e linhas como "13 a 15".');return}
+  // mantém o que a sua esposa completou no app (hóspede, status, observações)
+  const antigos={};state.res.filter(r=>r.prop==='studio'&&r.fonte==='planilha').forEach(r=>antigos[r.ini+r.fim]=r);
+  state.res=state.res.filter(r=>!(r.prop==='studio'&&r.fonte==='planilha'));
+  novos.forEach(n=>{const a=antigos[n.ini+n.fim]||{};
+    state.res.push({id:'p'+n.ini+n.fim,obs:a.obs||'',status:a.status||'',fonte:'planilha',...n,hospede:n.hospede||a.hospede||''})});
+  save();renderAll();toast(novos.length+' estadias do Studio importadas');
+  enviar({acao:'planilha',itens:state.res.filter(r=>r.prop==='studio'&&r.fonte==='planilha').map(limpo)});
+}
+
+// ---------- nuvem: Google Apps Script + Google Sheets ----------
+const CAMPOS=['id','prop','ini','fim','plat','hospede','valor','extra','taxa','status','obs','fonte'];
+const limpo=r=>{const o={};CAMPOS.forEach(k=>o[k]=r[k]==null?'':r[k]);return o};
+const persistiveis=()=>state.res.filter(r=>r.fonte!=='ical'||r.editado);
+function enviar(op){if(!state.sync)return;(state.fila=state.fila||[]).push(op);save();renderStatus();flush()}
+let enviando=false;
+async function flush(){
+  if(enviando||!state.sync)return;enviando=true;
+  try{
+    while((state.fila||[]).length){
+      const r=await fetch(state.sync,{method:'POST',body:JSON.stringify(state.fila[0])});
+      const d=JSON.parse(await r.text());
+      if(d.erro)throw new Error(d.erro);
+      state.fila.shift();save();
+    }
+  }catch(e){/* sem internet: tenta de novo na próxima sincronização */}
+  finally{enviando=false;renderStatus()}
+}
+function renderStatus(){
+  const el=document.getElementById('status');if(!el)return;
+  const f=(state.fila||[]).length;
+  if(!state.sync){el.textContent='dados só neste aparelho';return}
+  if(f){el.textContent='⏳ '+f+' alteraç'+(f>1?'ões':'ão')+' aguardando envio';return}
+  el.textContent=state.ultimaSync?'☁️ compartilhado · '+new Date(state.ultimaSync).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'☁️ compartilhado';
+}
+async function sincronizar(silencioso){
+  if(!state.sync){if(!silencioso)toast('Configure o link de sincronização');return}
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec\?k=.+/.test(state.sync)){
+    if(!silencioso)toast('Link incompleto: precisa terminar em /exec?k=SUASENHA');return}
+  try{
+    await flush();
+    if((state.fila||[]).length)throw new Error('há alterações deste aparelho que ainda não subiram. Confira a internet e tente de novo');
+    let r,d;
+    try{r=await fetch(state.sync,{redirect:'follow'})}
+    catch(e){throw new Error('não consegui acessar o script. Abra o app pelo GitHub Pages ou pelo Chrome (não pela pré-visualização) e confira se "Quem pode acessar" está como "Qualquer pessoa"')}
+    const txt=await r.text();
+    try{d=JSON.parse(txt)}catch(e){throw new Error('o Google pediu login. Na implantação, "Quem pode acessar" precisa ser "Qualquer pessoa"')}
+    if(d.erro)throw new Error(d.erro==='chave inválida'?'senha errada no final do link (lembre: @ vira %40)':d.erro);
+    if(Array.isArray(d.res)){
+      if(!d.res.length&&!state.migrado){
+        const loc=persistiveis();
+        if(!loc.length)state.migrado=true;
+        else if(confirm('A planilha compartilhada está vazia. Enviar os '+loc.length+' lançamentos deste aparelho para ela?')){
+          state.migrado=true;enviar({acao:'substituir',itens:loc.map(limpo)});
+        }
+      }else{
+        state.migrado=true;
+        state.res=d.res.map(x=>({...x,valor:num(x.valor),extra:num(x.extra),taxa:num(x.taxa),editado:x.fonte==='ical'}));
+      }
+    }else if(!silencioso)toast('Atualize o Código.gs no Apps Script para compartilhar os dados');
+    let n=0;['beach','studio'].forEach(p=>{if(Array.isArray(d[p]))n+=aplicarEventos(p,d[p])});
+    state.ultimaSync=new Date().toISOString();save();renderAll();
+    if(!silencioso)toast('Sincronizado: '+state.res.length+' lançamentos');
+  }catch(e){if(!silencioso)toast('Falha ao sincronizar: '+e.message)}
+}
+function salvarSync(){state.sync=document.getElementById('syncUrl').value.trim();save();sincronizar(false)}
+function renderSync(){
+  const u=state.ultimaSync?new Date(state.ultimaSync).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'nunca';
+  document.getElementById('syncBox').innerHTML=`
+   <label>Link do Apps Script (termina em <code>/exec?k=...</code>)</label>
+   <div class="row"><input id="syncUrl" value="${esc(state.sync||'')}" placeholder="https://script.google.com/macros/s/.../exec?k=..." style="flex:1;width:auto">
+   <button class="btn pri sm" onclick="salvarSync()">Salvar e sincronizar</button></div>
+   <p class="muted">Última sincronização: ${u}. O app sincroniza sozinho ao abrir, ao voltar para ele e a cada 30 min. Tudo o que for lançado vai para a planilha compartilhada no Google Sheets.</p>`;
+  renderStatus();
+}
+
+// ---------- backup ----------
+function exportar(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,1)],{type:'application/json'}));
+  a.download='locacoes-backup-'+hoje+'.json';a.click();
+}
+function importarBackup(input){
+  const f=input.files[0];if(!f)return;
+  f.text().then(t=>{try{const s=JSON.parse(t);if(!Array.isArray(s.res))throw 0;state={...s,sync:state.sync,fila:state.fila||[],migrado:state.migrado};save();renderAll();toast('Backup restaurado');
+    enviar({acao:'substituir',itens:persistiveis().map(limpo)})}catch(e){toast('Arquivo inválido')}});
+}
+function resetar(){if(state.sync){toast('Com a planilha compartilhada ativa, os dados vêm dela. Apague as linhas no Google Sheets se quiser recomeçar.');return}
+  if(confirm('Apagar tudo e voltar aos dados iniciais da planilha?')){try{localStorage.removeItem(KEY)}catch(e){}state=load();renderAll();toast('Dados restaurados')}}
+
+function renderAll(){renderCal();renderRes();renderFin();renderIcal();renderSync()}
+renderAll();
+sincronizar(true);
+setInterval(()=>sincronizar(true),30*60*1000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sincronizar(true)});
+</script>
+</body>
+</html>
